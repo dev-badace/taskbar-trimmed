@@ -1,14 +1,31 @@
-import React, { useState } from 'react';
+import { useState, useEffect, useRef } from "react";
 
 const AddTaskForm = ({ onAddTask, onClose }) => {
-  const [title, setTitle] = useState('');
-  const [description, setDescription] = useState('');
-  const [priority, setPriority] = useState('low');
-  const [dueDate, setDueDate] = useState('');
+  const [title, setTitle] = useState("");
+  const [description, setDescription] = useState("");
+  const [priority, setPriority] = useState("low");
+
+  let formRef = useRef();
+
+  useEffect(() => {
+    let handler = (e) => {
+      if (e.target) {
+        if (!formRef.current.contains(e.target)) {
+          onClose();
+        }
+      }
+    };
+
+    document.addEventListener("mousedown", handler);
+
+    return () => {
+      document.removeEventListener("mousedown", handler);
+    };
+  }, [onClose]);
 
   const handleSave = () => {
-    if (title.trim() === '' || description.trim() === '' || dueDate.trim() === '') {
-      alert('Please fill in all fields');
+    if (title.trim() === "" || description.trim() === "") {
+      alert("Please fill in all fields");
       return;
     }
 
@@ -17,20 +34,18 @@ const AddTaskForm = ({ onAddTask, onClose }) => {
       title,
       description,
       priority,
-      dueDate,
     };
 
     onAddTask(newTask);
-    setTitle('');
-    setDescription('');
-    setPriority('low');
-    setDueDate('');
+    setTitle("");
+    setDescription("");
+    setPriority("low");
     onClose();
   };
 
   return (
     <div className="fixed inset-0 flex items-center justify-center bg-gray-800 bg-opacity-50">
-      <div className="bg-white p-4 rounded-md">
+      <div ref={formRef} className="bg-white p-4 rounded-md">
         <h2 className="text-lg font-semibold mb-2">Add Task</h2>
         <label htmlFor="title">Title:</label>
         <input
@@ -58,14 +73,6 @@ const AddTaskForm = ({ onAddTask, onClose }) => {
           <option value="medium">Medium</option>
           <option value="high">High</option>
         </select>
-        <label htmlFor="dueDate">Due Date:</label>
-        <input
-          type="date"
-          id="dueDate"
-          value={dueDate}
-          onChange={(e) => setDueDate(e.target.value)}
-          className="mb-2 w-full p-2 border border-gray-300 rounded"
-        />
         <div className="flex justify-end">
           <button
             onClick={handleSave}

@@ -1,23 +1,18 @@
-import React, { useState, useEffect } from "react";
+import { useState } from "react";
 import "../App.css";
 import AddTaskForm from "./addtaskform";
 import EditTaskForm from "./edittaskform";
-import SearchBar from "./searchbar";
 
+//TODO hmm I want, DnD, multiple projects canvas draggable, and a status like 'current' | 'next' | 'planned' | 'finished' | 'drafts' '
 const status = ["UPCOMING", "COMPLETED", "OVERDUE", "ALL"];
 
-const populateStatus = (newTask) => {
-  var taskStatus = newTask.status;
-  var currentDate = new Date();
-  var taskDate = new Date(newTask.dueDate);
+//Bruh javascript doesn;t have enums, shocking, I thought it was a javascript thing :/ thankx typescript
+// enum TaksStatus = {
+//   UPCOMING = "UPCOMING",
+// }
 
-  if (taskStatus !== null && taskStatus === status[1]) {
-    // do nothing
-  } else if (taskDate < currentDate) {
-    newTask.status = status[2];
-  } else if (taskDate >= currentDate) {
-    newTask.status = status[0];
-  }
+const populateStatus = (newTask) => {
+  newTask.status = status[0];
 };
 
 const populateTasks = () => {
@@ -48,6 +43,8 @@ const TaskTable = () => {
   const [showAddForm, setShowAddForm] = useState(false);
   const [showEditForm, setShowEditForm] = useState(false);
   const [selectedTask, setSelectedTask] = useState(null);
+  //highligh the selected category, and show tasks
+  // const [filterCategory, setFilterCategory] = useState(null);
 
   console.log("taskObje", tasksObject);
 
@@ -55,7 +52,7 @@ const TaskTable = () => {
     populateStatus(newTask);
     localStorage.setItem(newTask.id, JSON.stringify(newTask));
     setTasksObject((prevTasks) => [...prevTasks, newTask]);
-	filterTasks(filter);
+    filterTasks(filter);
   };
 
   const toggleAddForm = () => {
@@ -81,13 +78,7 @@ const TaskTable = () => {
     );
 
     setShowEditForm(false);
-	filterTasks(filter);
-  };
-
-  const deleteLocalTask = (taskID) => {
-    localStorage.removeItem(taskID);
-    setTasksObject(populateTasks());
-	filterTasks(filter);
+    filterTasks(filter);
   };
 
   const updateStatus = (task) => {
@@ -106,11 +97,11 @@ const TaskTable = () => {
       prevTasks.map((it) => (it.id === task.id ? { ...it, ...task } : it))
     );
 
-	filterTasks(filter);
+    filterTasks(filter);
   };
 
   const filterTasks = (filterStatus) => {
-	setFilter(filterStatus);
+    setFilter(filterStatus);
     const allTasks = populateTasks();
     switch (filterStatus) {
       case status[0]:
@@ -130,33 +121,32 @@ const TaskTable = () => {
 
   return (
     <div className="container mx-auto mt-8">
-      <SearchBar tasksObject={tasksObject} />
       <div className="flex items-center mb-4">
-  <div
-    onClick={() => filterTasks(status[3])}
-    className="flex-1 text-center py-2 bg-cyan-200 border-2 border-slate-800 rounded-tl-lg rounded-bl-lg shadow-md hover:bg-cyan-500 hover:text-white cursor-pointer"
-  >
-    All Tasks
-  </div>
-  <div
-    onClick={() => filterTasks(status[0])}
-    className="flex-1 text-center py-2 bg-cyan-200 border-2 border-slate-800 shadow-md hover:bg-cyan-500 hover:text-white cursor-pointer"
-  >
-    Upcoming Tasks
-  </div>
-  <div
-    onClick={() => filterTasks(status[2])}
-    className="flex-1 text-center py-2 bg-cyan-200 border-2 border-slate-800 shadow-md hover:bg-cyan-500 hover:text-white cursor-pointer"
-  >
-    Overdue Tasks
-  </div>
-  <div
-    onClick={() => filterTasks(status[1])}
-    className="flex-1 text-center py-2 bg-cyan-200 border-2 border-slate-800 rounded-tr-lg rounded-br-lg shadow-md hover:bg-cyan-500 hover:text-white cursor-pointer"
-  >
-    Completed Tasks
-  </div>
-</div>
+        <div
+          onClick={() => filterTasks(status[3])}
+          className="flex-1 text-center py-2 bg-cyan-200 border-2 border-slate-800 rounded-tl-lg rounded-bl-lg shadow-md hover:bg-cyan-500 hover:text-white cursor-pointer"
+        >
+          All Tasks
+        </div>
+        <div
+          onClick={() => filterTasks(status[0])}
+          className="flex-1 text-center py-2 bg-cyan-200 border-2 border-slate-800 shadow-md hover:bg-cyan-500 hover:text-white cursor-pointer"
+        >
+          Upcoming Tasks
+        </div>
+        <div
+          onClick={() => filterTasks(status[2])}
+          className="flex-1 text-center py-2 bg-cyan-200 border-2 border-slate-800 shadow-md hover:bg-cyan-500 hover:text-white cursor-pointer"
+        >
+          Overdue Tasks
+        </div>
+        <div
+          onClick={() => filterTasks(status[1])}
+          className="flex-1 text-center py-2 bg-cyan-200 border-2 border-slate-800 rounded-tr-lg rounded-br-lg shadow-md hover:bg-cyan-500 hover:text-white cursor-pointer"
+        >
+          Completed Tasks
+        </div>
+      </div>
 
       <div className="flex flex-col font-mono">
         <div className="flex text-black rounded-md w-1/3">
@@ -164,7 +154,8 @@ const TaskTable = () => {
             <button
               className="bg-cyan-200 border-2 border-solid border-black shadow-md p-2 rounded 
           hover:bg-cyan-500 hover:text-white shadow-xl"
-              onClick={toggleAddForm}>
+              onClick={toggleAddForm}
+            >
               Add Task
             </button>
             {showAddForm && (
@@ -178,11 +169,10 @@ const TaskTable = () => {
             tasksObject={tasksObject}
             updateStatus={updateStatus}
             toggleEditForm={toggleEditForm}
-            deleteLocalTask={deleteLocalTask}
             handleEditTask={handleEditTask}
             showEditForm={showEditForm}
             selectedTask={selectedTask}
-            setShowEditForm={setShowAddForm}
+            setShowEditForm={setShowEditForm}
           />
         )}
       </div>
@@ -194,78 +184,74 @@ const TaskGrid = ({
   tasksObject,
   updateStatus,
   toggleEditForm,
-  deleteLocalTask,
   handleEditTask,
   showEditForm,
   selectedTask,
   setShowEditForm,
 }) => {
   return (
-	<table className="w-full table-auto border-2 m-2 border-black shadow-xl">
-	<thead>
-	  <tr className="bg-cyan-200 text-black border-2 border-black">
-		<th className="p-2 border-2 border-black">Title</th>
-		<th className="p-2 border-2 border-black">Description</th>
-		<th className="p-2 border-2 border-black">Due Date</th>
-		<th className="p-2 border-2 border-black">Priority</th>
-		<th className="p-2 border-2 border-black">Status</th>
-		<th className="p-2 border-2 border-black">Update Status</th>
-		<th className="p-2">Actions</th>
-	  </tr>
-	</thead>
-	<tbody>
-	  {tasksObject.map((task) => (
-		<tr key={task.id} className="bg-white-100 text-black rounded-md border border-dashed shadow-md font-mono">
-		  <td className="p-2 border-dashed border-2 hover:border-black hover:border-solid hover:bg-cyan-50">
-			{task.title}
-		  </td>
-		  <td className="p-2 border-dashed border-2 hover:border-black hover:border-solid hover:bg-cyan-50">
-			{task.description}
-		  </td>
-		  <td className="p-2 border-dashed border-2 hover:border-black hover:border-solid hover:bg-cyan-50">
-			{task.dueDate}
-		  </td>
-		  <td className="p-2 border-dashed border-2 hover:border-black hover:border-solid hover:bg-cyan-50">
-			{task.priority}
-		  </td>
-		  <td className="p-2 border-dashed border-2 hover:border-black hover:border-solid hover:bg-cyan-50">
-			{task.status}
-		  </td>
-		  <td className="p-2 border-dashed border-2 hover:border-black hover:border-solid hover:bg-cyan-50">
-			<button
-			  className="border-black border-2 bg-cyan-100 p-1 hover:bg-cyan-300"
-			  onClick={() => updateStatus(task)}
-			>
-			  {task.status === status[1] ? <p> Mark as Incomplete </p> : <p> Mark as Completed </p>}
-			</button>
-		  </td>
-		  <td className="p-2 hover:bg-cyan-50">
-			<button
-			  onClick={() => toggleEditForm(task)}
-			  className="bg-cyan-200 border-2 border-slate-800 rounded-lg shadow-md p-1 hover:bg-cyan-500 hover:text-white hover:shadow-xl"
-			>
-			  Edit
-			</button>
-			<button
-			  className="bg-cyan-200 border-2 border-slate-800 rounded-lg shadow-md p-1 hover:bg-cyan-500 hover:text-white hover:shadow-xl"
-			  onClick={() => deleteLocalTask(task.id)}
-			>
-			  Delete
-			</button>
-			{showEditForm && selectedTask && (
-			  <EditTaskForm
-				task={selectedTask}
-				onEditTask={handleEditTask}
-				onClose={() => setShowEditForm(false)}
-			  />
-			)}
-		  </td>
-		</tr>
-	  ))}
-	</tbody>
-  </table>
-  
-
+    <>
+      {showEditForm && selectedTask && (
+        <EditTaskForm
+          task={selectedTask}
+          onEditTask={handleEditTask}
+          onClose={() => setShowEditForm(false)}
+        />
+      )}
+      <table className="w-full table-auto border-2 m-2 border-black shadow-xl">
+        <thead>
+          <tr className="bg-cyan-200 text-black border-2 border-black">
+            <th className="p-2 border-2 border-black">Title</th>
+            <th className="p-2 border-2 border-black">Description</th>
+            <th className="p-2 border-2 border-black">Priority</th>
+            <th className="p-2 border-2 border-black">Status</th>
+            <th className="p-2 border-2 border-black">Update Status</th>
+            <th className="p-2">Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          {tasksObject.map((task) => (
+            <tr
+              key={task.id}
+              className="bg-white-100 text-black rounded-md border border-dashed shadow-md font-mono"
+            >
+              <td className="p-2 border-dashed border-2 hover:border-black hover:border-solid hover:bg-cyan-50">
+                {task.title}
+              </td>
+              <td className="p-2 border-dashed border-2 hover:border-black hover:border-solid hover:bg-cyan-50">
+                {task.description}
+              </td>
+              <td className="p-2 border-dashed border-2 hover:border-black hover:border-solid hover:bg-cyan-50">
+                {task.priority}
+              </td>
+              <td className="p-2 border-dashed border-2 hover:border-black hover:border-solid hover:bg-cyan-50">
+                {task.status}
+              </td>
+              <td className="p-2 border-dashed border-2 hover:border-black hover:border-solid hover:bg-cyan-50">
+                <button
+                  className="border-black border-2 bg-cyan-100 p-1 hover:bg-cyan-300"
+                  onClick={() => updateStatus(task)}
+                >
+                  {task.status === status[1] ? (
+                    <p> Mark as Incomplete </p>
+                  ) : (
+                    <p> Mark as Completed </p>
+                  )}
+                </button>
+              </td>
+              <td className="p-2 hover:bg-cyan-50">
+                <button
+                  onClick={() => toggleEditForm(task)}
+                  className="bg-cyan-200 border-2 border-slate-800 rounded-lg shadow-md p-1 hover:bg-cyan-500 hover:text-white hover:shadow-xl"
+                >
+                  Edit
+                </button>
+              </td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </>
   );
 };
 
